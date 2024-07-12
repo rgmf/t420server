@@ -7,25 +7,25 @@ services:
       # Definir el puerto dentro del servicio de Docker a utilizar
       - traefik.http.services.nextcloud.loadbalancer.server.port=80
       # Hacer que Traefik utilice este dominio en HTTP (en Traefik se ha definido el entrypo>
-      - traefik.http.routers.nextcloud-http.entrypoints=http
-      - traefik.http.routers.nextcloud-http.rule=Host(`nextcloud2.rgmf.es`)
-      # Usar la red públic "traefik-public" (declarada debajo)
-      - traefik.docker.network=traefik-public
+      - traefik.http.routers.nextcloud_http.entrypoints=http
+      - traefik.http.routers.nextcloud_http.rule=Host(`nextcloud.rgmf.es`)
+      # Usar la red públic "traefik_public" (declarada debajo)
+      - traefik.docker.network=traefik_public
       # Hacer que Traefik use este dominio in HTTPS
-      - traefik.http.routers.nextcloud-https.entrypoints=https
-      - traefik.http.routers.nextcloud-https.rule=Host(`nextcloud2.rgmf.es`)
-      - traefik.http.routers.nextcloud-https.tls=true
+      - traefik.http.routers.nextcloud_https.entrypoints=https
+      - traefik.http.routers.nextcloud_https.rule=Host(`nextcloud.rgmf.es`)
+      - traefik.http.routers.nextcloud_https.tls=true
       # Usar el resolver crado en Traefik llamado "le" (Let's Encrypt)
-      - traefik.http.routers.nextcloud-https.tls.certresolver=le
-      # Middleware "https-redirect" para redirigir tráfico HTTP a HTTPS
-      - traefik.http.middlewares.nextcloud-https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.nextcloud-https-redirect.redirectscheme.permanent=true
-      # Middleware para redirigir HTTP (router "app-http" creado arriba) a HTTPS (recién cre>
-      - traefik.http.routers.nextcloud-http.middlewares=nextcloud-https-redirect
+      - traefik.http.routers.nextcloud_https.tls.certresolver=le
+      # Middleware "nextcloud_https_redirect" para redirigir tráfico HTTP a HTTPS
+      - traefik.http.middlewares.nextcloud_https_redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.nextcloud_https_redirect.redirectscheme.permanent=true
+      # Middleware para redirigir HTTP (router "nextcloud_http" creado arriba) a HTTPS (recién creado nextcloud_https_redirect)
+      - traefik.http.routers.nextcloud_http.middlewares=nextcloud_https_redirect
 
     networks:
-      - traefik-public
-      - nextcloud-network
+      - traefik_public
+      - nextcloud_network
     volumes:
       - ./nextcloud_data:/var/www/html
     env_file:
@@ -34,17 +34,16 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_HOST=nextcloud_db
+      - MYSQL_HOST=nextcloud_mysql
     depends_on:
-      - nextcloud_db
+      - nextcloud_mysql
 
-  nextcloud_db:
+  nextcloud_mysql:
     image: mysql
-    container_name: nextcloud_db
     networks:
-      - nextcloud-network
+      - nextcloud_network
     volumes:
-      - ./nextcloud_db_data:/var/lib/mysql
+      - ./mysql_data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -53,10 +52,10 @@ services:
 
 volumes:
   nextcloud_data:
-  nextcloud_db_data:
+  mysql_data:
 
 networks:
-  traefik-public:
+  traefik_public:
     external: true
-  nextcloud-network:
+  nextcloud_network:
     driver: bridge

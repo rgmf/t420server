@@ -40,7 +40,7 @@ services:
       # Hay que añadir el volumen de docker para que Traefik pueda leer labels de otros servicios
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # Montar volumen donde están los certificados
-      - ./traefik-public-certificates:/certificates
+      - ./traefik_public_certificates:/certificates
     command:
       # Habilitar Docker en Traefik para que pueda leer los labels
       - --providers.docker
@@ -63,11 +63,11 @@ services:
       # Habilitar el Dashboard de Traefik
       # - --api
     networks:
-      - traefik-public
+      - traefik_public
 
 volumes:
-  traefik-public-certificates:
+  traefik_public_certificates:
 
 networks:
-  traefik-public:
+  traefik_public:
     external: true
