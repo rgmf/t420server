@@ -1,0 +1,29 @@
+* Instalar y configurar Docker en Debian 12
+Instalar Docker en Debian 12:
+https://docs.docker.com/engine/install/debian/
+
+Post-instalación de Docker en Debian 12, especialmente cómo hacer que un usuario regular pueda usar Docker:
+https://docs.docker.com/engine/install/linux-postinstall/
+
+* Vídeo-tutorial: FastAPI, Docker, Traefik, Droplet (Digital Ocean)
+Vídeo-turorial de *tiangolo* (creador de FastAPI) donde explica (y hace) cómo configurar todo esto.
+https://www.youtube.com/watch?v=7N5O62FjGDc&t=2822s
+
+* Obtención de certificados de Let's Encrypt
+Se hace todo "mágicamente" gracias a la integración con Traefik. Solo hay que usar los "labels" y configuraciones que se pueden ver en el vídeo-tutorial indicado arriba.
+
+Eso sí **es muy importante** no activar la redirección automática de HTTP a HTTPS hasta que no se hayan generado los certificados por medio de Let's Encrypt porque todo esto se hace vía HTTP (ya que no puede haber HTTPS hasta que no se obtengan estos certificados y se configure todo). Se pueden comentar estas líneas de la configuración de Docker de los servicios (como es el caso de FastAPI, o *backend*, en el ejemplo del vídeo-tutorial):
+
+#+begin_src yaml
+  # Middleware "https-redirect" para redirigir tráfico HTTP a HTTPS
+  #- traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+  #- traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+  # Middleware para redirigir HTTP (router "app-http" creado arriba) a HTTPS (recién creado https-redirect de arriba)
+  #- traefik.http.routers.app-http.middlewares=https-redirect
+#+end_src
+
+* Debugear petición a Let's Encrypt
+Desde esta web se puede ver qué problema tiene tu dominio cuando desde Let's Encrypt no se entrega un certificado a tu dominio.
+
+* Crear la red pública
+Hay que crear la red pública de Docker antes de levantar los contenedores por primera vez. En el ejemplo del vídeo-tutorial dicha red se denomina *trafik-plublic* (ver cómo crear una red con Docker).

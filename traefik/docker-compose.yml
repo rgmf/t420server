@@ -1,0 +1,73 @@
+services:
+  traefik:
+    image: traefik:v2.5
+    ports:
+      # Escuchar puerto 80 (necesario para redirigir a HTTPS)
+      - 80:80
+      # Escuchar puerto 443
+      - 443:443
+    restart: always
+    #labels:
+      # Habilita Traefik para este servicio y hacerlo disponible en la red pública
+      # - traefik.enable=true
+      # Usar la red pública llamada "traefik-public" declarada debajo
+      # - traefik.docker.network=traefik-public
+      # Definir el puerto dentro del servicio de Docker a usar
+      # - traefik.http.services.traefik-dashboard.loadbalancer.server.port=8080
+      # Hacer que Traefik use este dominio en HTTP
+      # - traefik.http.routers.traefik-dashboard-http.entrypoints=http
+      # - traefik.http.routers.traefik-dashboard-http.rule=Host(`traefik.rgmf.es`)
+      # traefik-https el actual router usando HTTPS
+      #- traefik.http.routers.traefik-dashboard-https.entrypoints=https
+      #- traefik.http.routers.traefik-dashboard-https.rule=Host(`traefik.rgmf.es`)
+      #- traefik.http.routers.traefik-dashboard-https.tls=true
+      # Usa el resolver "le" (Let's Encrypt) creado debajo
+      #- traefik.http.routers.traefik-dashboard-https.tls.certresolver=le
+      # Usar el servicio especial de Traefik api@internal con la web UI/Dashboard
+      #- traefik.http.routers.traefik-dashboard-https.service=api@internal
+      # - traefik.http.routers.traefik-dashboard-http.service=api@internal # Quitar esta línea cuando se desomente la de arriba
+      # Middleware https-redirect para redirigir de HTTP a HTTPS
+      #- traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+      #- traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+      # traefik-http: configurar el uso del middleware para redirigir a https
+      #- traefik.http.routers.traefik-dashboard-http.middlewares=https-redirect
+      # admin-auth middleware: con auth básico HTTP (basic auth -> autenticación básica integrada en los navegadores web)
+      # Usar las variables de entorno USERNAME y HASHED_PASSWORD
+      # - traefik.http.middlewares.admin-auth.basicauth.users=${USERNAME?Variable not set}:${HASHED_PASSWORD?Variable not set}
+      # Habilitar autenticación HTTP básica usando el middlweare creado arriba
+      # - traefik.http.routers.traefik-dashboard-https.middlewares=admin-auth
+    volumes:
+      # Hay que añadir el volumen de docker para que Traefik pueda leer labels de otros servicios
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Montar volumen donde están los certificados
+      - ./traefik-public-certificates:/certificates
+    command:
+      # Habilitar Docker en Traefik para que pueda leer los labels
+      - --providers.docker
+      # No exponer todos los servicios Docker, solos los indicados explícitamente
+      - --providers.docker.exposedbydefault=false
+      # Crear un entrypoint llamado "http" escuchando el puerto 80
+      - --entrypoints.http.address=:80
+      # Crear un entrypoint llamado "https" escuchando el puerto 443
+      - --entrypoints.https.address=:443
+      # Crea el certificado resolver llamado "le" para Let's Encrypt
+      - --certificatesresolvers.le.acme.email=rgmf@riseup.net
+      # Almacenar el certificado de Let's Encrypt en el volumen montado
+      - --certificatesresolvers.le.acme.storage=/certificates/acme.json
+      # Usar el TLS Challenge de Let's Encrypt
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      # Habilitar el acceso al logs, con las peticiones HTTP
+      - --accesslog
+      # Habilitar los logs de Traefik para configuraciones y errores
+      - --log
+      # Habilitar el Dashboard de Traefik
+      # - --api
+    networks:
+      - traefik-public
+
+volumes:
+  traefik-public-certificates:
+
+networks:
+  traefik-public:
+    external: true
