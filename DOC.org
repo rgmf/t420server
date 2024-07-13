@@ -27,3 +27,20 @@ Desde esta web se puede ver qué problema tiene tu dominio cuando desde Let's En
 
 * Crear la red pública
 Hay que crear la red pública de Docker antes de levantar los contenedores por primera vez. En el ejemplo del vídeo-tutorial dicha red se denomina *trafik-plublic* (ver cómo crear una red con Docker).
+
+* Apagar pantalla del portátil T420 que hace de server tras 1 minuto de inactividad
+Para apagar la pantalla tras un minuto de inactividad se puede usar el comando ~setterm --blank 1~ y configurar la ejecución del mismo creando (o editando) el fichero ~/etc/rc.local~:
+
+#+begin_src bash
+#!/bin/sh -e
+/usr/bin/setterm --blank 1
+exit 0
+#+end_src
+
+Por último, asegúrate que el archivo es ejecutable:
+
+#+begin_src bash
+sudo chmod +x /etc/rc.local
+#+end_src
+
+**Importante**: este comando se tiene que ejecutar en el equipo físico, no desde una conexión remota por SSH.
