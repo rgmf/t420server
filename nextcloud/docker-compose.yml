@@ -1,6 +1,7 @@
 services:
   nextcloud:
     image: nextcloud
+    container_name: nextcloud
     labels:
       # Habilitar Traefik para este servicio llamado "nextcloud"
       - traefik.enable=true
@@ -40,10 +41,13 @@ services:
 
   nextcloud_mysql:
     image: mysql
+    container_name: nextcloud_mysql
     networks:
       - nextcloud_network
     volumes:
       - ./mysql_data:/var/lib/mysql
+    env_file:
+      - .env
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
